@@ -1,0 +1,76 @@
+---
+import { getCollection } from 'astro:content';
+
+// 1. 获取文章
+const allPosts = await getCollection('posts');
+const sortedPosts = allPosts.sort((a, b) => b.data.published.valueOf() - a.data.published.valueOf());
+
+// 2. 颜色配置
+// @ts-ignore
+const moodColors: Record<string, string> = {
+    excellent: 'bg-green-400 dark:bg-green-500',
+    normal: 'bg-blue-400 dark:bg-blue-500',
+    bad: 'bg-red-400 dark:bg-red-500',
+    empty: 'bg-gray-100 dark:bg-gray-700/50',
+};
+
+// 3. 生成日期 (最近28天)
+const daysToShow = 28;
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const dateList = Array.from({ length: daysToShow }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (daysToShow - 1 - i));
+    return d;
+});
+
+// 4. 辅助函数
+function getMoodForDate(date: Date) {
+    const post = sortedPosts.find(p => {
+        const postDate = new Date(p.data.published);
+        return postDate.toLocaleDateString() === date.toLocaleDateString();
+    });
+    return post ? (post.data as any).mood : null;
+}
+---
+
+<div class="card-base px-4 py-4 border-none !bg-white/50 dark:!bg-black/5 mb-4">
+    <div class="font-bold text-lg mb-3 text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+        <span>📊</span> 每日状态
+    </div>
+
+    <div class="grid grid-cols-7 gap-2">
+        {dateList.map((date) => {
+            const mood = getMoodForDate(date);
+            const colorClass = moodColors[mood as string] || moodColors.empty;
+            const isToday = date.toDateString() === today.toDateString();
+
+            // --- 修改后：纯展示逻辑 ---
+            const baseClass = `
+                aspect-square rounded-sm transition-all duration-300
+                ${colorClass}
+                ${isToday ? 'ring-2 ring-black/20 dark:ring-white/20' : ''}
+                relative group flex items-center justify-center
+                cursor-default
+            `;
+            // ------------------------
+
+            return (
+                    <div class={baseClass}>
+                        {/* Tooltip 悬浮提示框 */}
+                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[10px] text-white bg-black/80 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                        {date.toLocaleDateString()} {mood ? `- ${mood}` : ''}
+                    </span>
+                    </div>
+            );
+        })}
+    </div>
+
+    {/* 底部图例（保留链接作为归档入口，如果连这里也不想要跳转，可以把 href 换成 span） */}
+    <div class="flex justify-between items-center mt-3 text-xs text-gray-400">
+        <a href="/moods/bad" class="flex items-center gap-1 hover:text-red-500 transition-colors"><span class="w-2 h-2 rounded-full bg-red-400"></span>坏</a>
+        <a href="/moods/normal" class="flex items-center gap-1 hover:text-blue-500 transition-colors"><span class="w-2 h-2 rounded-full bg-blue-400"></span>常</a>
+        <a href="/moods/excellent" class="flex items-center gap-1 hover:text-green-500 transition-colors"><span class="w-2 h-2 rounded-full bg-green-400"></span>优</a>
+    </div>
+</div>
