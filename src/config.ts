@@ -16,8 +16,8 @@ export const siteConfig: SiteConfig = {
 		fixed: false, // Hide the theme color picker for visitors
 	},
 	banner: {
-		enable: false,
-		src: "assets/images/demo-banner.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+		enable: true,
+		src: "assets/images/sakura.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 		position: "center", // Equivalent to object-position, only supports 'top', 'center', 'bottom'. 'center' by default
 		credit: {
 			enable: false, // Display the credit text of the banner image
@@ -53,27 +53,21 @@ export const profileConfig: ProfileConfig = {
 	bio: "My pulse is digital. My silence is analog.",
 	links: [
 		{
-			name: "Twitter",
-			icon: "fa6-brands:twitter", // Visit https://icones.js.org/ for icon codes
-			// You will need to install the corresponding icon set if it's not already included
-			// `pnpm add @iconify-json/<icon-set-name>`
-			url: "https://courage.best",
-		},
-		{
-			name: "Steam",
-			icon: "fa6-brands:steam",
-			url: "https://store.steampowered.com",
-		},
-		{
 			name: "GitHub",
 			icon: "fa6-brands:github",
-			url: "https://github.com/saicaca/fuwari",
+			url: "https://github.com/cwzhong627-source",
 		},
 		{
 			name: "网易云",
 			icon: "ri:netease-cloud-music-fill",
 			url: "https://music.163.com/#/playlist?id=6693448775",
+
 		},
+		{
+			name: "Bilibili",
+			icon: "fa6-brands:bilibili",
+			url: "https://m.bilibili.com/space/1866567179?from=headline",
+		}
 	],
 };
 

@@ -150,3 +150,16 @@
     }
   }
 }
+/* 高亮样式 */
+mark {
+    background-color: #fef08a; /* 亮黄色背景 */
+    color: #000;               /* 黑色文字 */
+    padding: 0.1rem 0.25rem;   /* 内边距 */
+    border-radius: 0.25rem;    /* 圆角 */
+}
+
+/* 适配暗色模式 (Dark Mode) */
+:root[class="dark"] mark {
+    background-color: #a16207; /* 暗黄色背景 */
+    color: #fff;               /* 白色文字 */
+}
