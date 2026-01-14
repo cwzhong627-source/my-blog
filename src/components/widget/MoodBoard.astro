@@ -1,0 +1,82 @@
+---
+import { getCollection } from "astro:content";
+
+// 1. 获取文章
+const allPosts = await getCollection("posts");
+// 过滤掉草稿和未发布的文章(可选，视你的需求而定)
+const validPosts = allPosts.filter(p => !p.data.draft); 
+
+// 2. 颜色配置
+const moodColors: Record<string, string> = {
+    excellent: "bg-green-400 dark:bg-green-500",
+    normal: "bg-blue-400 dark:bg-blue-500",
+    bad: "bg-red-400 dark:bg-red-500",
+    empty: "bg-gray-100 dark:bg-gray-700/50",
+};
+
+// 3. 生成日期 (最近28天)
+const daysToShow = 28;
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const dateList = Array.from({ length: daysToShow }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (daysToShow - 1 - i));
+    return d;
+});
+
+// 4. 辅助函数 (已修复逻辑)
+function getMoodForDate(_date: Date) {
+    const targetDateStr = _date.toDateString();
+    
+    const post = validPosts.find((p) => {
+        const postDate = new Date(p.data.published);
+        // 比较日期字符串，忽略具体时分秒
+        const isSameDay = postDate.toDateString() === targetDateStr;
+        // 确保文章有 mood 字段
+        const hasMood = (p.data as any).mood !== undefined;
+        return isSameDay && hasMood;
+    });
+
+    return post ? (post.data as any).mood : null;
+}
+---
+
+<div class="card-base px-4 py-4 border-none !bg-white/50 dark:!bg-black/5 mb-4">
+    <div class="font-bold text-lg mb-3 text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+        <span>📊</span> 每日状态
+    </div>
+
+    <div class="grid grid-cols-7 gap-2">
+        {dateList.map((date) => {
+            const mood = getMoodForDate(date);
+            // 如果没有 mood，使用 empty
+            const colorClass = mood ? (moodColors[mood as string] || moodColors.normal) : moodColors.empty;
+            const isToday = date.toDateString() === today.toDateString();
+
+            const baseClass = `
+                aspect-square rounded-sm transition-all duration-300
+                ${colorClass}
+                ${isToday ? 'ring-2 ring-black/20 dark:ring-white/20' : ''}
+                relative group flex items-center justify-center
+                cursor-default
+            `;
+
+            return (
+                <div class={baseClass}>
+                    {/* Tooltip 悬浮提示框 */}
+                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[10px] text-white bg-black/80 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                        {date.toLocaleDateString()} {mood ? `- ${mood}` : ''}
+                    </span>
+                </div>
+            );
+        })}
+    </div>
+
+    {/* 底部图例 */}
+    <div class="flex justify-between items-center mt-3 text-xs text-gray-400">
+        <a href="/archive/tag/bad" class="flex items-center gap-1 hover:text-red-500 transition-colors"><span class="w-2 h-2 rounded-full bg-red-400"></span>坏</a>
+        <a href="/archive/tag/normal" class="flex items-center gap-1 hover:text-blue-500 transition-colors"><span class="w-2 h-2 rounded-full bg-blue-400"></span>常</a>
+        <a href="/archive/tag/excellent" class="flex items-center gap-1 hover:text-green-500 transition-colors"><span class="w-2 h-2 rounded-full bg-green-400"></span>优</a>
+    </div>
+</div>
